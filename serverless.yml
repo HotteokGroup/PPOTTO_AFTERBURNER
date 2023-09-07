@@ -1,0 +1,21 @@
+org: ppotto
+app: ppotto-after-burner
+service: ppotto-after-burner
+frameworkVersion: "3"
+
+plugins:
+  - serverless-offline
+  - serverless-plugin-typescript
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: ap-northeast-2
+
+functions:
+  healCheck:
+    handler: src/main-handler.healCheck
+    events:
+      - httpApi:
+          method: GET
+          path: /check
