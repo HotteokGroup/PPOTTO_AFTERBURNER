@@ -4,11 +4,20 @@ frameworkVersion: "3"
 plugins:
   - serverless-offline
   - serverless-plugin-typescript
+  - serverless-plugin-common-excludes
+  - serverless-plugin-include-dependencies
 # 람다 구성
 provider:
   name: aws
   runtime: nodejs18.x
   region: ap-northeast-2
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - s3:*
+          Resource: "*"
 # 핸들러 구성
 functions:
   imageProcess:
@@ -28,6 +37,3 @@ functions:
             - prefix: uploads/
             - suffix: .png
           existing: true
-package:
-  patterns:
-    - node_modules/**
