@@ -3,12 +3,16 @@
   "version": "1.0.0",
   "description": "",
   "dependencies": {
+    "aws-sdk": "^2.1454.0",
     "express": "^4.18.2",
-    "serverless-http": "^3.1.1"
+    "serverless-http": "^3.1.1",
+    "sharp": "^0.32.5"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.119",
     "serverless-offline": "^12.0.4",
+    "serverless-plugin-common-excludes": "^4.0.0",
+    "serverless-plugin-include-dependencies": "^5.1.0",
     "serverless-plugin-typescript": "^2.1.5",
     "typescript": "^5.2.2"
   }
