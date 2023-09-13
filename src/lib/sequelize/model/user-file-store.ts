@@ -8,43 +8,35 @@ export default async (sequelize: Sequelize) => {
         type: DataTypes.STRING,
         primaryKey: true,
       },
-      contentType: {
-        type: DataTypes.ENUM("FEED_IMAGE", "PROFILE_IMAGE"),
-        allowNull: false,
-      },
       userId: {
         type: DataTypes.INTEGER,
         allowNull: true,
+      },
+      contentType: {
+        type: DataTypes.ENUM("FEED_IMAGE", "PROFILE_IMAGE"),
+        allowNull: false,
       },
       contentId: {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      fileName: {
+      originalFileUrl: {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      originalUrl: {
+      smallThumbnailUrl: {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      originalCompressedUrl: {
+      mediumThumbnailUrl: {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      smallUrl: {
+      largeThumbnailUrl: {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      mediumUrl: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      largeUrl: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-      deletedAt: {
+      disconnectedAt: {
         type: DataTypes.DATE,
         allowNull: true,
       },
