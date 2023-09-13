@@ -21,6 +21,17 @@ export const imageProcess: Handler = async (event: S3Event) => {
   }
   console.log(`파일 이름: ${fileName} 경로 : ${originalKey}`);
 
+  // 파일관리 데이터베이스에 연결
+  const dbConnection = await getSequelize();
+  const userFileStoreRepository = await userFileStore(dbConnection);
+  // 파일이 DB에 등록되어 있지 않은 경우 이미지 리사이징을 하지 않는다
+  const file = await userFileStoreRepository.findOne({
+    where: {
+      id: fileName,
+    },
+  });
+  if (!file) return true;
+
   // // 파일을 가져온다
   const originalImage = await getFileFromS3({ bucket: bucketName, key: originalKey });
 
@@ -43,13 +54,13 @@ export const imageProcess: Handler = async (event: S3Event) => {
   }
 
   // 리사이징한 이미지를 저장한다
-  const smallImageKey = `output/${TODAY}/${fileName}/small.webp`;
-  const largeImageKey = `output/${TODAY}/${fileName}/large.webp`;
-  const originalCompressImageKey = `output/${TODAY}/${fileName}/original-compress.webp`;
+  const smallThumbnailUrl = `thumbnail-images/${TODAY}/${fileName}/small.webp`;
+  const mediumThumbnailUrl = `thumbnail-images/${TODAY}/${fileName}/medium.webp`;
+  const largeThumbnailUrl = `thumbnail-images/${TODAY}/${fileName}/large.webp`;
   const [smallImageSaveResult, largeImageSaveResult, originalCompressImageSaveResult] = await Promise.allSettled([
-    saveFileToS3({ bucket: bucketName, key: smallImageKey, file: smallImage.value }),
-    saveFileToS3({ bucket: bucketName, key: largeImageKey, file: largeImage.value }),
-    saveFileToS3({ bucket: bucketName, key: originalCompressImageKey, file: originalCompressImage.value }),
+    saveFileToS3({ bucket: bucketName, key: smallThumbnailUrl, file: smallImage.value }),
+    saveFileToS3({ bucket: bucketName, key: mediumThumbnailUrl, file: largeImage.value }),
+    saveFileToS3({ bucket: bucketName, key: largeThumbnailUrl, file: originalCompressImage.value }),
   ]);
   if (
     smallImageSaveResult.status === "rejected" ||
@@ -61,32 +72,21 @@ export const imageProcess: Handler = async (event: S3Event) => {
     if (originalCompressImageSaveResult.status === "rejected") console.log(originalCompressImageSaveResult.reason);
     throw new Error("이미지 저장에 실패했습니다");
   }
+
   // 결과를 데이터베이스에 업데이트한다
-  const dbConnection = await getSequelize();
-  const userFileStoreRepository = await userFileStore(dbConnection);
-  // 해당 파일이 있는지 확인한다
-  const file = await userFileStoreRepository.findOne({
-    where: {
-      id: fileName,
+  await userFileStoreRepository.update(
+    {
+      originalFileUrl: originalKey,
+      smallThumbnailUrl,
+      mediumThumbnailUrl,
+      largeThumbnailUrl,
     },
-  });
-  if (file) {
-    // 있다면 업데이트한다
-    await userFileStoreRepository.update(
-      {
-        fileName,
-        originalUrl: originalKey,
-        smallUrl: smallImageKey,
-        largeUrl: largeImageKey,
-        originalCompressedUrl: originalCompressImageKey,
+    {
+      where: {
+        id: fileName,
       },
-      {
-        where: {
-          id: fileName,
-        },
-      }
-    );
-  }
+    }
+  );
   await dbConnection.connectionManager.close();
 };
 
